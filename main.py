@@ -36,15 +36,10 @@ resources = {
 # TODO: 4. Check resources sufficient?
 def check_resources(ingredients:dict) -> bool:
     is_sufficient = True
-    if ingredients.get("water") > resources.get("water"):
-        print("Sorry, there is not enough water.")
-        is_sufficient = False
-    if ingredients.get("milk") and ingredients.get("milk") > resources.get("milk"):
-        print("Sorry, there is not enough milk.")
-        is_sufficient = False
-    if ingredients.get("coffee") > resources.get("coffee"):
-        print("Sorry, there is not enough coffee.")
-        is_sufficient = False
+    for item in ingredients:
+        if ingredients.get(item) > resources.get(item):
+            print(f"Sorry, there is not enough {item}.")
+            is_sufficient = False
     return is_sufficient
 
 
