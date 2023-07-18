@@ -34,7 +34,7 @@ resources = {
 
 
 # TODO: 4. Check resources sufficient?
-def check_resources(ingredients:dict) -> bool:
+def check_resources(ingredients: dict) -> bool:
     is_sufficient = True
     for item in ingredients:
         if ingredients.get(item) > resources.get(item):
@@ -57,24 +57,28 @@ def process_coins() -> float:
 
 # TODO: 6. Check transaction successful?
 def check_transaction(money_inserted, drink_value) -> bool:
+    """Return True when the payment is accepted, or False if money is insufficient"""
     if money_inserted < drink_value:
         print("Sorry, that's not enough money. Money refunded.")
         return False
     if money_inserted >= drink_value:
         print("Transaction successful")
-        resources["money"] += drink_value
         if money_inserted > drink_value:
-            print(f"Here is your exchange: ${float(round(money_inserted-drink_value, 2))}")
+            print("Here is your exchange: ${:.2f}".format(money_inserted-drink_value))
         return True
 
 
 # TODO: 7. Make Coffee
-def deduct_from_resources(water=0, milk=0, coffee=0):
+def deduct_from_resources(ingredients: dict):
+    for item in ingredients:
+        resources[item] -= ingredients.get(item)
+    return
 
-    resources['water'] -= water
-    resources['milk'] -= milk
-    resources['coffee'] -= coffee
 
+def make_coffee(choice: str):
+    ingredients = MENU.get(choice).get("ingredients")
+    deduct_from_resources(ingredients)
+    print(f"Here is your {choice}!")
     return
 
 
@@ -82,40 +86,14 @@ while True:
     # TODO: 1. Prompt user by asking “What would you like? (espresso/latte/cappuccino):”
     choice = input("What would you like? (espresso/latte/cappuccino):")
     match choice:
-        case "espresso":
-            is_sufficient_resources = check_resources(MENU.get("espresso").get("ingredients"))
+        case "espresso" | "latte" | "cappuccino":
+            is_sufficient_resources = check_resources(MENU.get(choice).get("ingredients"))
             if is_sufficient_resources:
                 coins_inserted = process_coins()
-                is_sufficient_money = check_transaction(coins_inserted, MENU.get("espresso").get("cost"))
+                is_sufficient_money = check_transaction(coins_inserted, MENU.get(choice).get("cost"))
                 if is_sufficient_money:
-                    ingredients = MENU.get("espresso").get("ingredients")
-                    deduct_from_resources(ingredients.get("water"),
-                                          ingredients.get("milk"),
-                                          ingredients.get("coffee"))
-                    print("Here is your espresso!")
-
-        case "latte":
-            is_sufficient_resources = check_resources(MENU.get("latte").get("ingredients"))
-            if is_sufficient_resources:
-                coins_inserted = process_coins()
-                is_sufficient_money = check_transaction(coins_inserted, MENU.get("latte").get("cost"))
-                if is_sufficient_money:
-                    ingredients = MENU.get("latte").get("ingredients")
-                    deduct_from_resources(ingredients.get("water"),
-                                          ingredients.get("milk"),
-                                          ingredients.get("coffee"))
-                    print("Here is your latte!")
-        case "cappuccino":
-            is_sufficient_resources = check_resources(MENU.get("cappuccino").get("ingredients"))
-            if is_sufficient_resources:
-                coins_inserted = process_coins()
-                is_sufficient_money = check_transaction(coins_inserted, MENU.get("latte").get("cost"))
-                if is_sufficient_money:
-                    ingredients = MENU.get("cappuccino").get("ingredients")
-                    deduct_from_resources(ingredients.get("water"),
-                                          ingredients.get("milk"),
-                                          ingredients.get("coffee"))
-                    print("Here is your cappuccino!")
+                    make_coffee(choice)
+                    resources["money"] += MENU.get(choice).get("cost")
 
         # TODO: 2. Turn off the Coffee Machine by entering “off” to the prompt.
         case "off":
@@ -126,6 +104,6 @@ while True:
             print(f'Water: {resources.get("water")}ml')
             print(f'Milk: {resources.get("milk")}ml')
             print(f'Coffee: {resources.get("coffee")}g')
-            print(f'Money: ${resources.get("money")}')
+            print('Money: ${:.2f}'.format(resources.get("money")))
         case _:
             print("Wrong option or typing error")
